@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多模态命名实体识别</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('/static/Earthly.jpg'); /* 背景图片路径 */
+            background-size: cover; /* 确保图片覆盖整个背景 */
+            background-position: center; /* 图片居中 */
+            background-repeat: no-repeat; /* 图片不重复 */
+            font-family: "黑体", sans-serif; /* 设置全局字体为黑体，如果用户计算机没有黑体，则使用默认的sans-serif字体 */
+            font-weight: normal; /* 设置全局字体粗细为普通 */
+           
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.3); /* 半透明背景色 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #3c3c3c;
+        }
+        .model-selection {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.3); /* 调整为适合您页面的颜色 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+.model-selection h2 {
+    margin-bottom: 15px;
+    color: #3c3c3c; /* 标题颜色 */
+}
+
+.model-selection label {
+    margin-right: 10px;
+    font-size: 16px; /* 调整字体大小 */
+    color: #333; /* 字体颜色 */
+}
+
+.model-selection input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+        .input-section, .results-section {
+            margin-bottom: 20px;
+        }
+        .input-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch; /* 使所有子元素的高度相同 */
+            gap: 20px; /* 增加间隔 */
+            flex-wrap: wrap;
+        }
+        .text-input,
+        .image-upload {
+            flex: 1;
+            margin: 10px;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            height: 350px; /* 初始高度 */
+            color: rgb(61, 61, 61);
+        }
+        .text-input h2, .image-upload h2 {
+            margin: 0 0 10px 0;
+        }
+        .text-input textarea {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: none; /* 禁用大小调整功能 */
+            overflow-y: scroll; /* 添加垂直滚动条 */
+        }
+        .text-input textarea:focus {
+            outline: none; /* 移除默认的黑色轮廓 */
+            box-shadow: 0 0 5px 2px rgba(21, 21, 21, 0.2); /* 添加灰色阴影 */
+        }
+
+        .image-upload input[type="file"] {
+            height: 40px; /* 调整按钮高度 */
+            font-size: 16px; /* 调整按钮文字大小 */
+            margin-bottom: 10px;
+
+            .upload-button {
+    width: 100%; /* 使按钮宽度填满容器 */
+    padding: 10px;
+    font-size: 16px;
+    background-color: #f0f0f0; /* 调整为合适的颜色 */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px; /* 根据需要调整 */
+}
+
+.image-upload {
+    flex: 1;
+    margin: 10px;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    height: 300px; /* 确保高度一致 */
+}
+
+        }
+
+        .image-preview {
+            flex-grow: 1;
+            height: calc(100% - 60px); /* 减去按钮高度部分 */
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #f8f8f8;
+        }
+        .button-container {
+    display: flex;
+    justify-content: space-between; /* 按钮水平排列 */
+    margin-top: 10px;
+}
+
+.upload2-button {
+    padding: 10px;
+    font-size: 16px;
+    background-color: #f0f0f0; /* 调整为合适的颜色 */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    flex: 1; /* 使按钮平分容器宽度 */
+    margin-right: 5px; /* 保证按钮之间的间隙 */
+}
+
+.upload2-button:last-child {
+    margin-right: 0; /* 最后一个按钮不需要右边距 */
+}
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .results-section {
+            display: none;
+        }
+        .results-section h2 {
+            margin-top: 0;
+            color: rgb(35, 35, 35);
+        }
+        .results-section .result-image {
+            width: 100%;
+            height: 400px;
+            display: none; /* 默认隐藏 */
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #f8f8f8;
+        }
+        .results-section canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .highlight-yellow {
+            background-color: yellow;
+        }
+        .highlight-green {
+            background-color: lightgreen;
+        }
+        .highlight-blue {
+            background-color: lightblue;
+        }
+        .highlight-pink {
+            background-color: lightpink;
+        }
+        #analyzeButton {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            color: rgb(2, 2, 2);
+            background-color: rgba(47, 101, 68, 0.4);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: 0.4s;
+        }
+        #analyzeButton:hover {
+            background-color: rgba(12, 80, 38, 0.67);
+        }
+        #analyzeButton::before,
+        #analyzeButton::after {
+            content: "";
+            display: block;
+            width: 120px;
+            height: 100%;
+            background: rgba(179, 255, 210, 0.5);
+            opacity: 0.5;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: skewX(-35deg);
+            filter: blur(60px);
+            overflow: hidden;
+            transform: translateX(-100px);
+        }
+        #analyzeButton::after {
+            width: 80px;
+            background: rgba(179, 255, 210, 0.3);
+            left: 100px;
+            opacity: 0;
+            filter: blur(25px);
+        }
+        #analyzeButton:hover::before {
+            transition: 1.5s;
+            transform: translateX(1100px);
+            opacity: 0.7;
+        }
+        #analyzeButton:hover::after {
+            transition: 1.5s;
+            transform: translateX(1100px);
+            opacity: 0.8;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .results-table th, .results-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        .results-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> Multimodal Named Entity Recognition</h1>
+        <h2>{{msg}}</h2>
+        <form method="post" action="/main" enctype="multipart/form-data">
+           
+        <div class="model-selection">
+            <h2>Choose a model</h2>
+            <label for="model1">
+                <input type="radio" id="model1" name="model" value="ITA">
+                ITA
+            </label>
+            <label for="model2">
+                <input type="radio" id="model2" name="model" value="UMGF">
+                UMGF
+            </label>
+        </div>
+        
+        <div class="input-section">
+            <div class="text-input">
+                <h2>Input your text</h2>
+                <textarea id="textInput" name="text" placeholder="input your text here..."></textarea>
+                <div class="button-container"> 
+                <button id="exampleButton" type="button" class="upload2-button">Our Example</button> 
+                </div>
+            </div>
+            <div class="image-upload">
+                <h2>Upload a picture(optional for ITA)</h2>
+                <div class="image-preview">
+                    <img id="uploadedImage" src="#" alt="上传的图片" style="display: none;">
+                </div>
+                <div class="button-container"> <!-- 新增按钮容器 -->
+                    <button id="uploadButton" class="upload2-button">Choose a file</button>
+                </div>
+                <input type="file" id="imageUpload" name="image" accept="image/*" style="display: none;"> <!-- 隐藏原始文件输入 -->
+            </div>
+        </div>
+        {% if res == true %}
+        <div class="results-section" id="resultsSection">
+            <h2>Result</h2>
+            {% for i in range(words|length) %}
+                {% if entity[i].endswith("PER") %}
+                    <span class="highlight-yellow">{{ words[i] }}</span>
+                {% elif  entity[i].endswith("LOC") %}
+                     <span class="highlight-green">{{ words[i] }}</span>
+                {% elif  entity[i].endswith("OTHER") %}
+                     <span class="highlight-blue">{{ words[i] }}</span>
+                {% elif entity[i].endswith("ORG") %}
+                     <span class="highlight-pink">{{ words[i] }}</span> 
+                {% else %}
+                    {{words[i]}}
+                {% endif %}
+            {% endfor %}
+            <h3 id="imageAnnotationsTitle" style="display: none;">图像标注</h3>
+            <div class="result-image" id="imageAnnotations" style="display: none;">
+                <canvas id="imageCanvas"></canvas>
+            </div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Entity type</th>
+                        <th>Confidence</th>
+                    </tr>
+                </thead>
+                {% for i in range(words|length) %}
+                <tbody>
+                    
+                    <th>{{words[i]}}</th>
+                    <th>{{entity[i]}}</th>
+                    <th>{{score[i]}}</th>
+                    
+                </tbody>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+        <input name="example" type="hidden" value="0" id = 'usingExample'>
+        <button id="analyzeButton" type="submit">Analysis</button>
+    </form>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const imageUpload = document.getElementById('imageUpload');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const imagePreview = document.querySelector('.image-preview');
+        const resultsSection = document.getElementById('resultsSection');
+        const textResults = document.getElementById('textResults');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const imageAnnotationsTitle = document.getElementById('imageAnnotationsTitle');
+        const imageAnnotations = document.getElementById('imageAnnotations');
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        let imageUploaded = false; // 追踪图片是否已上传
+        document.getElementById('exampleButton').addEventListener('click', function() {
+            document.getElementById('textInput').value = "Donald Trump was shot and wounded at a Republican campaign event in Pennsylvania.";
+            document.getElementById('usingExample').value = "1";
+            uploadedImage.src = '/static/trump.jpg';
+            uploadedImage.style.display = 'block';
+            uploadedImage.src = reader.result;
+            imageUploaded = true; 
+            
+            return;
+        });//here here loooooooooook me!!!!!!!!!!尝试事例按钮功能实现222
+
+        imageUpload.addEventListener('change', function(event) {
+            const reader = new FileReader();
+            document.getElementById('usingExample').value = "0";
+            reader.onload = function() {
+                uploadedImage.src = reader.result;
+                uploadedImage.style.display = 'block';
+                imageAnnotationsTitle.style.display = 'block';
+                imageAnnotations.style.display = 'flex';
+                imageUploaded = true; // 图片已上传
+                const img = new Image();
+                img.src = reader.result;
+                img.onload = function() {
+                    const ctx = imageCanvas.getContext('2d');
+                    imageCanvas.width = img.width;
+                    imageCanvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                }
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        });
+
+
+    if (imageUploaded) {
+        const ctx = imageCanvas.getContext('2d');
+        ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+        mockAnnotations.forEach(ann => {
+            ctx.fillRect(ann.x, ann.y, ann.width, ann.height);
+            ctx.strokeRect(ann.x, ann.y, ann.width, ann.height);
+        });
+        imageAnnotationsTitle.style.display = 'block';
+        imageAnnotations.style.display = 'flex';
+    } else {
+        imageAnnotationsTitle.style.display = 'none';
+        imageAnnotations.style.display = 'none';
+    }
+
+    resultsSection.style.display = 'block';
+
+
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
